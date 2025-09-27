@@ -11,11 +11,10 @@ import pandas   as pd
 
 class EchoStrain(torchvision.datasets.VisionDataset):
 
-    def __init__(self, imgs_root=None, masks_root=None, split="train", mean=0., std=1.):
-        super().__init__(imgs_root)
+    def __init__(self, root=None, split="train", mean=0., std=1.):
+        super().__init__(root)
 
         self.split      = split.upper()
-        self.masks_root = masks_root
         self.mean       = mean
         self.std        = std
 
@@ -24,8 +23,13 @@ class EchoStrain(torchvision.datasets.VisionDataset):
         self.masks      = []
         self.header     = []
 
+        # Automatically set paths based on split
+        self.imgs_root  = os.path.join(root, self.split, "imgs", f"CAMUS_{self.split.upper()}")
+        self.masks_root = os.path.join(root, self.split, "masks", f"CAMUS_{self.split.upper()}")
+
+
         self.images = sorted([
-                f for f in os.listdir(imgs_root)
+                f for f in os.listdir(self.imgs_root)
                 if f.lower().endswith(".png")
             ])
         
