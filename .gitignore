@@ -1,0 +1,41 @@
+# Output folders and intermediate files
+output_images/
+output/
+output_external/
+*.log
+*.npy
+*.csv
+*.json
+
+# Model weights and checkpoints
+*.pt
+
+# IDE/editor settings
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Ignore Python virtual environment
+venv/
+
+# Python build artifacts
+echost.egg-info/
+*.egg-info/
+build/
+dist/
+__pycache__/
+*.py[cod]
+*.so
+
+# Cache
+~/.cache/
+
+# Data
+data/
