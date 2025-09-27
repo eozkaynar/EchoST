@@ -14,25 +14,30 @@ import cv2
 
 
 # Root(s) where patientXXXX folders live (searched recursively)
-ROOTS       = ["data/database_nifti"]
+ROOTS       = ["echost/data/camus/database_nifti"]
 
 # One patient id per line, e.g., 'patient0001'
-TXT_TRAIN   = "data/database_split/subgroup_training.txt"
-TXT_VAL     = "data/database_split/subgroup_validation.txt"
-TXT_TEST    = "data/database_split/subgroup_testing.txt"
+TXT_TRAIN   = "echost/data/camus/database_split/subgroup_training.txt"
+TXT_VAL     = "echost/data/camus/database_split/subgroup_validation.txt"
+TXT_TEST    = "echost/data/camus/database_split/subgroup_testing.txt"
 
 # Output path
-OUT_IMG_TRAIN   = "data/train/imgs/CAMUS_TRAIN"
-OUT_MSK_TRAIN   = "data/train/masks/CAMUS_TRAIN"
-OUT_IMG_VAL     = "data/validate/imgs/CAMUS_VAL"
-OUT_MSK_VAL     = "data/validate/masks/CAMUS_VAL"
-OUT_IMG_TEST    = "data/test/imgs/CAMUS_TEST"
-OUT_MSK_TEST    = "data/test/masks/CAMUS_TEST"
+OUT_IMG_TRAIN       = "echost/data/camus/train/imgs/CAMUS_TRAIN"
+OUT_MSK_TRAIN       = "echost/data/camus/train/masks/CAMUS_TRAIN"
+OUT_MSK_TRAIN_LV    = "echost/data/camus/train/masks/CAMUS_TRAIN_LV"
+
+OUT_IMG_VAL         = "echost/data/camus/validate/imgs/CAMUS_VAL"
+OUT_MSK_VAL         = "echost/data/camus/validate/masks/CAMUS_VAL"
+OUT_MSK_VAL_LV      = "echost/data/camus/validate/masks/CAMUS_VAL_LV"
+
+OUT_IMG_TEST        = "echost/data/camus/test/imgs/CAMUS_TEST"
+OUT_MSK_TEST        = "echost/data/camus/test/masks/CAMUS_TEST"
+OUT_MSK_TEST_LV     = "echost/data/camus/test/masks/CAMUS_TEST_LV"
 
 # RGB mask output folders
-OUT_RGB_TRAIN = "data/train/masks/CAMUS_TRAIN_RGB"
-OUT_RGB_VAL   = "data/validate/masks/CAMUS_VAL_RGB"
-OUT_RGB_TEST  = "data/test/masks/CAMUS_TEST_RGB"
+OUT_RGB_TRAIN = "echost/data/camus/train/masks/CAMUS_TRAIN_RGB"
+OUT_RGB_VAL   = "echost/data/camus/validate/masks/CAMUS_VAL_RGB"
+OUT_RGB_TEST  = "echost/data/camus/test/masks/CAMUS_TEST_RGB"
 
 
 
@@ -53,10 +58,10 @@ def read_list(p):
 
 
 def ensure_dirs(have_val: bool):
-    os.makedirs(OUT_IMG_TRAIN, exist_ok=True); os.makedirs(OUT_MSK_TRAIN, exist_ok=True); os.makedirs(OUT_RGB_TRAIN, exist_ok=True)
+    os.makedirs(OUT_IMG_TRAIN, exist_ok=True); os.makedirs(OUT_MSK_TRAIN, exist_ok=True); os.makedirs(OUT_MSK_TRAIN_LV, exist_ok=True); os.makedirs(OUT_RGB_TRAIN, exist_ok=True)
     if have_val:
-        os.makedirs(OUT_IMG_VAL, exist_ok=True); os.makedirs(OUT_MSK_VAL, exist_ok=True); os.makedirs(OUT_RGB_VAL, exist_ok=True)
-    os.makedirs(OUT_IMG_TEST, exist_ok=True); os.makedirs(OUT_MSK_TEST, exist_ok=True); os.makedirs(OUT_RGB_TEST, exist_ok=True)
+        os.makedirs(OUT_IMG_VAL, exist_ok=True); os.makedirs(OUT_MSK_VAL, exist_ok=True); os.makedirs(OUT_MSK_VAL_LV, exist_ok=True); os.makedirs(OUT_RGB_VAL, exist_ok=True)
+    os.makedirs(OUT_IMG_TEST, exist_ok=True); os.makedirs(OUT_MSK_TEST, exist_ok=True); os.makedirs(OUT_MSK_TEST_LV, exist_ok=True); os.makedirs(OUT_RGB_TEST, exist_ok=True)
 
 
 def read_nii(p):
@@ -66,7 +71,7 @@ def read_nii(p):
     return np.squeeze(arr)
 
 def to_u8_minmax(x):
-    """Min–max normalize a grayscale array to uint8 [0,255]."""
+    """Min-max normalize a grayscale array to uint8 [0,255]."""
     x = x.astype(np.float32)
     rng = float(np.max(x) - np.min(x))
     if rng < 1e-6:
@@ -89,10 +94,10 @@ def save_mask_lvwall_256(lbl2d, out_path):
 
 def save_mask_lv_256(lbl2d, out_path):
     """
-    Build a binary LV-cavity mask (label==3 → 255, else 0), resize to 256x256 with NEAREST,
+    Build a binary LV-cavity mask (label==1 → 255, else 0), resize to 256x256 with NEAREST,
     and write as uint8 PNG. Nearest preserves class labels.
     """
-    m = (lbl2d == 3).astype(np.uint8) * 255
+    m = (lbl2d == 1).astype(np.uint8) * 255
     m = cv2.resize(m, TARGET_SIZE, interpolation=cv2.INTER_NEAREST)
     cv2.imwrite(out_path, m)
 
@@ -132,15 +137,15 @@ def norm_key(p):
 
 def split_out_dirs(pid, train_ids, val_ids, test_ids):
     """Return (img_out, msk_out, rgb_out) folders for a given patient id, based on split."""
-    if pid in train_ids: return OUT_IMG_TRAIN, OUT_MSK_TRAIN, OUT_RGB_TRAIN
-    if pid in val_ids:   return OUT_IMG_VAL,  OUT_MSK_VAL,  OUT_RGB_VAL
-    if pid in test_ids:  return OUT_IMG_TEST, OUT_MSK_TEST, OUT_RGB_TEST
-    return None, None, None
+    if pid in train_ids: return OUT_IMG_TRAIN, OUT_MSK_TRAIN, OUT_MSK_TRAIN_LV, OUT_RGB_TRAIN
+    if pid in val_ids:   return OUT_IMG_VAL,  OUT_MSK_VAL, OUT_MSK_VAL_LV, OUT_RGB_VAL
+    if pid in test_ids:  return OUT_IMG_TEST, OUT_MSK_TEST, OUT_MSK_TEST_LV, OUT_RGB_TEST
+    return None, None, None,None
 
 
 def process_patient(pdir, pid, train_ids, val_ids, test_ids, counters):
     """Convert ED/ES and half_sequence for a single patient into 256x256 PNGs."""
-    img_out, msk_out, rgb_out = split_out_dirs(pid, train_ids, val_ids, test_ids)
+    img_out, msk_out, mask_out_lv, rgb_out = split_out_dirs(pid, train_ids, val_ids, test_ids)
     if img_out is None:
         return
     # ----- ED / ES single-frame -----
@@ -158,7 +163,7 @@ def process_patient(pdir, pid, train_ids, val_ids, test_ids, counters):
             name = f"{pid}_{view}_{ph}.png"
             save_img_256(img_np, os.path.join(img_out, name))
             save_mask_lvwall_256(lbl_np, os.path.join(msk_out, name))
-            save_mask_lv_256(lbl_np, os.path.join(msk_out, name))
+            save_mask_lv_256(lbl_np, os.path.join(mask_out_lv, name))
             save_colored_mask(lbl_np, os.path.join(rgb_out, name))
             counters["pairs"] += 1
 
@@ -192,7 +197,7 @@ def process_patient(pdir, pid, train_ids, val_ids, test_ids, counters):
             name = f"{key}_f{t:03d}.png"
             save_img_256(img_np[t], os.path.join(img_out, name))
             save_mask_lvwall_256(lbl_np[t], os.path.join(msk_out, name))
-            save_mask_lv_256(lbl_np[t], os.path.join(msk_out, name))
+            save_mask_lv_256(lbl_np[t], os.path.join(mask_out_lv, name))
             save_colored_mask(lbl_np[t], os.path.join(rgb_out, name))
             counters["pairs"] += 1
 
@@ -202,6 +207,7 @@ def main():
     val_ids     = read_list(TXT_VAL)
     test_ids    = read_list(TXT_TEST)
     print(f"Split sizes → train:{len(train_ids)} val:{len(val_ids)} test:{len(test_ids)}")
+    ensure_dirs(have_val=True)
 
     # Find all patient folders recursively under ROOTS
     patient_dirs = []
